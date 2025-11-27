@@ -22,31 +22,37 @@ const awsSecrets = require('./utils/aws-secrets');
     // NOW import routes (after DATABASE_URL is set)
     const healthRoutes = require('./routes/health.routes');
     const authRoutes = require('./routes/auth.routes');
-    const accountRoutes = require('./routes/account.routes');
-    const categoryRoutes = require('./routes/category.routes');
-    const transactionRoutes = require('./routes/transaction.routes');
+    const urlRoutes = require('./routes/url.routes');
 
     const app = express();
 
-    app.use(cors({
-      origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3001'],
-      methods: ['GET', 'POST', 'PUT', 'DELETE'],
-      allowedHeaders: ['Content-Type', 'Authorization']
-    }));
+    // Configure CORS with proper settings
+    const corsOptions = {
+      origin: ['http://localhost:5000', 'http://localhost:3001', 'http://localhost:3000'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+      optionsSuccessStatus: 200
+    };
+
+    app.use(cors(corsOptions));
 
     app.use(express.json());
 
     app.get('/', (req, res) => {
-      res.send('My Money Backend API');
+      res.send('URL Shortener Backend API');
     });
 
     // Health check route for AWS Load Balancer (no auth required)
     app.use('/health', healthRoutes);
 
     app.use('/api/auth', authRoutes);
-    app.use('/api/account', accountRoutes);
-    app.use('/api/categories', categoryRoutes);
-    app.use('/api/transactions', transactionRoutes);
+    
+    // Mount the public redirect route BEFORE the /api/urls routes
+    const { redirectUrl } = require('./controllers/url.controller');
+    app.get('/:shortCode', redirectUrl);
+    
+    app.use('/api/urls', urlRoutes);
 
     const PORT = process.env.PORT || 3000;
 

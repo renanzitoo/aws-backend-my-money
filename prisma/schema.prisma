@@ -1,4 +1,4 @@
-// This is your Prisma schema file,
+// This is your Prisma schema file for URL Shortener Service
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -11,66 +11,47 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int            @id @default(autoincrement())
+  email     String         @unique
   password  String
   name      String?
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  accounts  Account[]
-  categories Category[]
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  urls      ShortenedUrl[]
 
   @@map("users")
 }
 
-model Account {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  name      String
-  balance   Float
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id])
-  transactions Transaction[]
-
-  @@map("accounts")
-}
-
-model Category {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  name      String
-  type      CategoryType
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id])
-  transactions Transaction[]
-
-  @@map("categories")
-}
-
-model Transaction {
-  id          Int      @id @default(autoincrement())
-  accountId   Int      @map("account_id")
-  categoryId  Int      @map("category_id")
-  amount      Float
+model ShortenedUrl {
+  id          Int           @id @default(autoincrement())
+  userId      Int           @map("user_id")
+  originalUrl String        @map("original_url")
+  shortCode   String        @unique @map("short_code")
+  title       String?
   description String?
-  date        DateTime
-  type        TransactionType
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  account     Account  @relation(fields: [accountId], references: [id])
-  category    Category @relation(fields: [categoryId], references: [id])
+  clicks      Int           @default(0)
+  expiresAt   DateTime?     @map("expires_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analytics   UrlAnalytic[]
 
-  @@map("transactions")
+  @@index([shortCode])
+  @@index([userId])
+  @@map("shortened_urls")
 }
 
-enum CategoryType {
-  income
-  expense
-}
+model UrlAnalytic {
+  id        Int          @id @default(autoincrement())
+  urlId     Int          @map("url_id")
+  userAgent String?      @map("user_agent")
+  referer   String?
+  ipAddress String?      @map("ip_address")
+  country   String?
+  clickedAt DateTime     @default(now()) @map("clicked_at")
+  url       ShortenedUrl @relation(fields: [urlId], references: [id], onDelete: Cascade)
 
-enum TransactionType {
-  income
-  expense
+  @@index([urlId])
+  @@index([clickedAt])
+  @@map("url_analytics")
 }

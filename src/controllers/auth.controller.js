@@ -25,21 +25,6 @@ const register = async (req, res) => {
       },
     });
 
-    // Create default categories for the new user
-    const defaultCategories = [
-      { name: 'Salary', type: 'income', userId: user.id },
-      { name: 'Food', type: 'expense', userId: user.id },
-      { name: 'Transport', type: 'expense', userId: user.id },
-      { name: 'Shopping', type: 'expense', userId: user.id },
-      { name: 'Bills', type: 'expense', userId: user.id },
-      { name: 'Entertainment', type: 'expense', userId: user.id },
-      { name: 'Health', type: 'expense', userId: user.id },
-    ];
-
-    await prisma.category.createMany({
-      data: defaultCategories,
-    });
-
     const { password: _, ...userWithoutPassword } = user;
     res.status(201).json(userWithoutPassword);
   } catch (error) {

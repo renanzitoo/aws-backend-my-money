@@ -12,7 +12,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.setup.js'],
   
   // Coverage configuration
-  collectCoverage: true,
+  collectCoverage: false,
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.js',
