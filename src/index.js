@@ -28,7 +28,23 @@ const awsSecrets = require('./utils/aws-secrets');
 
     // Configure CORS with proper settings
     const corsOptions = {
-      origin: ['http://localhost:5000', 'http://localhost:3001', 'http://localhost:3000'],
+      origin: function (origin, callback) {
+        // Lista de origens permitidas
+        const allowedOrigins = [
+          'http://localhost:5000',
+          'http://localhost:3001', 
+          'http://localhost:3000',
+          'https://d2nvo495vv8bz5.cloudfront.net',
+          // Adicione outras origens conforme necessário
+        ];
+        
+        // Permitir requisições sem origin (como mobile apps, curl, etc)
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
